@@ -4,12 +4,13 @@ import { Button, Icon } from 'react-native-elements';
 import { useRouter } from 'expo-router';
 import { Checkbox } from 'react-native-paper';
 import { auth, googleProvider, facebookProvider, twitterProvider } from '../../services/firebaseConfig';
-import { signInWithEmailAndPassword, GoogleAuthProvider, signInWithCredential } from "firebase/auth";
+import { signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, FacebookAuthProvider, TwitterAuthProvider, signInWithCredential } from "firebase/auth";
 import * as Google from 'expo-auth-session/providers/google';
 import * as WebBrowser from 'expo-web-browser';
 import googleLogo from "../../assets/images/google.png";
 import facebookLogo from "../../assets/images/facebook.png";
 import xLogo from "../../assets/images/twitter.png";
+
 WebBrowser.maybeCompleteAuthSession();
 
 const LoginPage = () => {
@@ -46,15 +47,32 @@ const LoginPage = () => {
         router.push('/home');
       })
       .catch((error) => {
-        router.push({
-          pathname: '/error',
-          params: { error: error.message },
-        });
+        setError(error.message);
       });
   };
 
-  const handleSocialLogin = (googleProvider: GoogleAuthProvider) => {
+  const handleGoogleLogin = () => {
     promptAsync();
+  };
+
+  const handleFacebookLogin = () => {
+    signInWithPopup(auth, facebookProvider)
+      .then(() => {
+        router.push('/home');
+      })
+      .catch((error) => {
+        setError(error.message);
+      });
+  };
+
+  const handleTwitterLogin = () => {
+    signInWithPopup(auth, twitterProvider)
+      .then(() => {
+        router.push('/home');
+      })
+      .catch((error) => {
+        setError(error.message);
+      });
   };
 
   const toggleShowPassword = () => {
@@ -114,21 +132,18 @@ const LoginPage = () => {
         <View style={styles.divider} />
         <Text style={styles.smallText}>Or Log in with</Text>
         <View style={styles.socialContainer}>
-          <TouchableOpacity disabled={!request}
-            onPress={() => {
-              promptAsync();
-            }}>
+          <TouchableOpacity disabled={!request} onPress={handleGoogleLogin}>
             <Image source={googleLogo} style={styles.socialIcon} />
           </TouchableOpacity>
-          <TouchableOpacity onPress={() => handleSocialLogin(facebookProvider)}>
+          <TouchableOpacity onPress={handleFacebookLogin}>
             <Image source={facebookLogo} style={styles.socialIcon} />
           </TouchableOpacity>
-          <TouchableOpacity onPress={() => handleSocialLogin(twitterProvider)}>
+          <TouchableOpacity onPress={handleTwitterLogin}>
             <Image source={xLogo} style={styles.socialIcon} />
           </TouchableOpacity>
         </View>
         <Text style={styles.smallText}>
-          Don’t have an account? <TouchableOpacity onPress={() => router.push('/signup')}><Text style={styles.signUpText}>Sign up</Text></TouchableOpacity>
+          Don’t have an account? <TouchableOpacity onPress={() => router.push('/auth/signup')}><Text style={styles.signUpText}>Sign up</Text></TouchableOpacity>
         </Text>
       </View>
     </View>
