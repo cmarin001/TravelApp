@@ -11,6 +11,10 @@ export default function RootLayout() {
       <Stack.Screen name="home" options={{ headerShown: false }} />
       <Stack.Screen name="details" options={{ headerShown: false }} />
       <Stack.Screen name="datePicker" options={{ headerShown: false }} />
+      <Stack.Screen name="paymentMethod" options={{ headerShown: false }} />
+      <Stack.Screen name="creditCardMethod" options={{ headerShown: false }} />
+      <Stack.Screen name="verification" options={{ headerShown: false }} />
+      <Stack.Screen name="orderConfirmation" options={{ headerShown: false }} />
     </Stack>
   );
 }

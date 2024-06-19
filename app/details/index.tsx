@@ -57,7 +57,7 @@ const DetailsPage = () => {
               <Text style={styles.priceLabel}>Price</Text>
               <Text style={styles.price}>$199</Text>
             </View>
-            <TouchableOpacity style={styles.bookButton} onPress={() => router.push('/datePicker')}>
+            <TouchableOpacity style={styles.bookButton} onPress={() => router.push('/datepicker')}>
               <Text style={styles.bookButtonText}>Book Now →</Text>
             </TouchableOpacity>
           </View>
