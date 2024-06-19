@@ -58,7 +58,7 @@ const DatePickerPage = () => {
             </View>
           </View>
         </View>
-        <TouchableOpacity style={styles.bookButton} onPress={() => alert('Proceed to check!')}>
+        <TouchableOpacity style={styles.bookButton} onPress={() => router.push('/paymentMethod')}>
           <Text style={styles.bookButtonText}>Go to check →</Text>
         </TouchableOpacity>
       </View>
