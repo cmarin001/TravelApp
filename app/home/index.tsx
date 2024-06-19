@@ -1,10 +1,22 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, Button, ActivityIndicator, Image, Dimensions, TextInput, ScrollView, FlatList } from 'react-native';
-import { auth } from '../../services/firebaseConfig';
-import { signOut } from 'firebase/auth';
-import { useRouter } from 'expo-router';
-import Carousel from 'react-native-reanimated-carousel';
-import { fetchCountryPlaces } from '@/services/locationService';
+import React, { useEffect, useState } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  Button,
+  ActivityIndicator,
+  Image,
+  Dimensions,
+  TextInput,
+  ScrollView,
+  FlatList,
+  TouchableOpacity,
+} from "react-native";
+import { auth } from "../../services/firebaseConfig";
+import { signOut } from "firebase/auth";
+import { useRouter } from "expo-router";
+import Carousel from "react-native-reanimated-carousel";
+import { fetchCountryPlaces } from "@/services/locationService";
 
 type Place = {
   place_id: string;
@@ -36,9 +48,9 @@ const HomePage = () => {
       const country = "USA";
       const placesData = await fetchCountryPlaces(country);
       const flattenedPlaces: Place[] = Object.values(placesData).flat();
-      
+
       if (isLoadMore) {
-        setPlaces(prevPlaces => [...prevPlaces, ...flattenedPlaces]);
+        setPlaces((prevPlaces) => [...prevPlaces, ...flattenedPlaces]);
       } else {
         setPlaces(flattenedPlaces);
       }
@@ -69,30 +81,57 @@ const HomePage = () => {
 
   const handleLogout = () => {
     signOut(auth).then(() => {
-      router.push('/');
+      router.push("/");
     });
   };
 
   const renderCarouselItem = ({ item }: { item: Place }) => {
     return (
-      <View style={styles.card}>
-        <Image source={{ uri: `https://location-app-sigma.vercel.app` + item.image_url }} style={styles.image} />
-        <Text style={styles.placeName}>{item.display_name}</Text>
-      </View>
+      <TouchableOpacity
+        onPress={() =>
+          router.push({
+            pathname: "/details",
+            params: { place: JSON.stringify(item) },
+          })
+        }
+      >
+        <View style={styles.card}>
+          <Image
+            source={{
+              uri: `https://location-app-sigma.vercel.app` + item.image_url,
+            }}
+            style={styles.image}
+          />
+          <Text style={styles.placeName}>{item.display_name}</Text>
+        </View>
+      </TouchableOpacity>
     );
   };
 
   const renderGridItem = ({ item }: { item: Place }) => {
     return (
-      <View style={styles.gridItem}>
-        <Image source={{ uri: `https://location-app-sigma.vercel.app` + item.image_url }} style={styles.gridImage} />
+      <TouchableOpacity
+        style={styles.gridItem}
+        onPress={() =>
+          router.push({
+            pathname: "/details",
+            params: { place: JSON.stringify(item) },
+          })
+        }
+      >
+        <Image
+          source={{
+            uri: `https://location-app-sigma.vercel.app${item.image_url}`,
+          }}
+          style={styles.gridImage}
+        />
         <Text style={styles.gridPlaceName}>{item.display_name}</Text>
-      </View>
+      </TouchableOpacity>
     );
   };
 
   const handleLoadMore = () => {
-    setPage(prevPage => prevPage + 1);
+    setPage((prevPage) => prevPage + 1);
     loadPlaces(true);
   };
 
@@ -105,7 +144,7 @@ const HomePage = () => {
   }
 
   return (
-    <ScrollView 
+    <ScrollView
       contentContainerStyle={styles.scrollContainer}
       onScroll={({ nativeEvent }) => {
         if (isCloseToBottom(nativeEvent)) {
@@ -129,7 +168,7 @@ const HomePage = () => {
           <Text style={styles.sectionAction}>See all</Text>
         </View>
         <Carousel
-          width={Dimensions.get('window').width}
+          width={Dimensions.get("window").width}
           height={300}
           autoPlay={true}
           data={places}
@@ -144,22 +183,29 @@ const HomePage = () => {
           <FlatList
             data={recommendedPlaces}
             renderItem={renderGridItem}
-            keyExtractor={item => item.place_id}
+            keyExtractor={(item) => item.place_id}
             numColumns={2}
             columnWrapperStyle={styles.gridColumn}
             scrollEnabled={false}
           />
         </View>
         {loadingMore && <ActivityIndicator size="small" color="#0000ff" />}
-        <Button title="Logout" onPress={handleLogout} />
+        {/* <Button title="Logout" onPress={handleLogout} /> */}
       </View>
     </ScrollView>
   );
 };
 
-const isCloseToBottom = ({ layoutMeasurement, contentOffset, contentSize }: any) => {
+const isCloseToBottom = ({
+  layoutMeasurement,
+  contentOffset,
+  contentSize,
+}: any) => {
   const paddingToBottom = 20;
-  return layoutMeasurement.height + contentOffset.y >= contentSize.height - paddingToBottom;
+  return (
+    layoutMeasurement.height + contentOffset.y >=
+    contentSize.height - paddingToBottom
+  );
 };
 
 const styles = StyleSheet.create({
@@ -168,66 +214,67 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: "#f5f5f5",
     padding: 16,
   },
   loadingContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   header: {
-    alignItems: 'center',
+    alignItems: "center",
     marginBottom: 16,
+    marginTop: 60,
   },
   welcomeText: {
-    fontSize: 24,
-    color: '#333',
+    fontSize: 32,
+    color: "#333",
   },
   userName: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#333',
+    fontSize: 48,
+    fontWeight: "bold",
+    color: "#333",
   },
   searchInput: {
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     borderRadius: 8,
     padding: 12,
     marginBottom: 16,
     fontSize: 16,
-    color: '#333',
+    color: "#333",
   },
   sectionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     marginVertical: 8,
   },
   sectionTitle: {
     fontSize: 20,
-    fontWeight: 'bold',
-    color: '#333',
+    fontWeight: "bold",
+    color: "#333",
   },
   sectionAction: {
     fontSize: 14,
-    color: '#007bff',
+    color: "#007bff",
   },
   card: {
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     borderRadius: 8,
     height: 250,
     padding: 16,
     marginLeft: 25,
     marginRight: 25,
-    alignItems: 'center',
-    shadowColor: '#000',
+    alignItems: "center",
+    shadowColor: "#000",
     shadowOpacity: 0.2,
     shadowRadius: 10,
     shadowOffset: { width: 0, height: 5 },
     elevation: 2,
   },
   image: {
-    width: '100%',
+    width: "100%",
     height: 150,
     borderRadius: 8,
   },
@@ -240,27 +287,27 @@ const styles = StyleSheet.create({
   },
   gridItem: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     borderRadius: 8,
     padding: 8,
     margin: 8,
-    alignItems: 'center',
+    alignItems: "center",
   },
   gridImage: {
-    width: '100%',
+    width: "100%",
     height: 100,
     borderRadius: 8,
   },
   gridPlaceName: {
     fontSize: 16,
     marginTop: 8,
-    textAlign: 'center',
+    textAlign: "center",
   },
   gridColumn: {
-    justifyContent: 'space-between',
+    justifyContent: "space-between",
   },
   carousel: {
-    marginBottom: 20,
+    marginBottom: 10,
   },
 });
 
