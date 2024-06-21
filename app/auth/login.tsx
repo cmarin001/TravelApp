@@ -22,6 +22,7 @@ const LoginPage = () => {
   const router = useRouter();
   const [request, response, promptAsync] = Google.useIdTokenAuthRequest({
     clientId: '888334131410-tt9sp9t874higpc4eq9c3m9n2jipbblm.apps.googleusercontent.com',
+    redirectUri: 'https://auth.expo.io/@cmarin/travelapp',
   });
 
   useEffect(() => {
