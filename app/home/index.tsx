@@ -3,7 +3,6 @@ import {
   View,
   Text,
   StyleSheet,
-  Button,
   ActivityIndicator,
   Image,
   Dimensions,
@@ -22,6 +21,8 @@ type Place = {
   place_id: string;
   display_name: string;
   image_url: string;
+  description: string;
+  rating: number;
 };
 
 const HomePage = () => {
@@ -30,11 +31,17 @@ const HomePage = () => {
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [page, setPage] = useState(1);
+  const [userName, setUserName] = useState("");
+  const [likedPlaces, setLikedPlaces] = useState<{ [key: string]: boolean }>({});
   const router = useRouter();
 
   useEffect(() => {
     loadPlaces();
     loadRecommendedPlaces();
+    const user = auth.currentUser;
+    if (user) {
+      setUserName(user.displayName || "User");
+    }
   }, []);
 
   const loadPlaces = async (isLoadMore = false) => {
@@ -47,7 +54,7 @@ const HomePage = () => {
 
       const country = "USA";
       const placesData = await fetchCountryPlaces(country);
-      const flattenedPlaces: Place[] = Object.values(placesData).flat();
+      const flattenedPlaces: any = Object.values(placesData).flat();
 
       if (isLoadMore) {
         setPlaces((prevPlaces) => [...prevPlaces, ...flattenedPlaces]);
@@ -70,7 +77,7 @@ const HomePage = () => {
       setLoading(true);
       const country = "Germany";
       const placesData = await fetchCountryPlaces(country);
-      const flattenedPlaces: Place[] = Object.values(placesData).flat();
+      const flattenedPlaces: any[] = Object.values(placesData).flat();
       setRecommendedPlaces(flattenedPlaces);
     } catch (error) {
       console.error("Error fetching recommended places:", error);
@@ -85,7 +92,15 @@ const HomePage = () => {
     });
   };
 
+  const toggleLike = (placeId: string) => {
+    setLikedPlaces((prevLikedPlaces) => ({
+      ...prevLikedPlaces,
+      [placeId]: !prevLikedPlaces[placeId],
+    }));
+  };
+
   const renderCarouselItem = ({ item }: { item: Place }) => {
+    const isLiked = likedPlaces[item.place_id];
     return (
       <TouchableOpacity
         onPress={() =>
@@ -102,13 +117,22 @@ const HomePage = () => {
             }}
             style={styles.image}
           />
-          <Text style={styles.placeName}>{item.display_name}</Text>
+          <View style={styles.overlay}>
+            <Text style={styles.placeName}>{item.display_name}</Text>
+            <View style={styles.ratingContainer}>
+              <Text style={styles.ratingText}>★ {item.rating}</Text>
+              <TouchableOpacity onPress={() => toggleLike(item.place_id)}>
+                <Text style={[styles.heartIcon, isLiked && styles.heartIconLiked]}>❤️</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
         </View>
       </TouchableOpacity>
     );
   };
 
   const renderGridItem = ({ item }: { item: Place }) => {
+    const isLiked = likedPlaces[item.place_id];
     return (
       <TouchableOpacity
         style={styles.gridItem}
@@ -125,7 +149,15 @@ const HomePage = () => {
           }}
           style={styles.gridImage}
         />
-        <Text style={styles.gridPlaceName}>{item.display_name}</Text>
+        <View style={styles.gridOverlay}>
+          <Text style={styles.gridPlaceName}>{item.display_name}</Text>
+          <View style={styles.gridInfo}>
+            <Text style={styles.gridRating}>★ {item.rating}</Text>
+            <TouchableOpacity onPress={() => toggleLike(item.place_id)}>
+              <Text style={[styles.gridHeart, isLiked && styles.gridHeartLiked]}>❤️</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
       </TouchableOpacity>
     );
   };
@@ -156,7 +188,7 @@ const HomePage = () => {
       <View style={styles.container}>
         <View style={styles.header}>
           <Text style={styles.welcomeText}>Welcome back,</Text>
-          <Text style={styles.userName}>John Doe</Text>
+          <Text style={styles.userName}>{userName}</Text>
         </View>
         <TextInput
           style={styles.searchInput}
@@ -190,7 +222,6 @@ const HomePage = () => {
           />
         </View>
         {loadingMore && <ActivityIndicator size="small" color="#0000ff" />}
-        {/* <Button title="Logout" onPress={handleLogout} /> */}
       </View>
     </ScrollView>
   );
@@ -263,10 +294,9 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     borderRadius: 8,
     height: 250,
-    padding: 16,
+    padding: 0,
     marginLeft: 25,
     marginRight: 25,
-    alignItems: "center",
     shadowColor: "#000",
     shadowOpacity: 0.2,
     shadowRadius: 10,
@@ -275,12 +305,42 @@ const styles = StyleSheet.create({
   },
   image: {
     width: "100%",
-    height: 150,
+    height: "100%",
     borderRadius: 8,
+  },
+  overlay: {
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: "rgba(0,0,0,0.6)",
+    paddingVertical: 8,
+    paddingHorizontal: 15,
+    borderBottomLeftRadius: 8,
+    borderBottomRightRadius: 8,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
   },
   placeName: {
     fontSize: 18,
-    marginTop: 10,
+    color: "#fff",
+  },
+  ratingContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  ratingText: {
+    fontSize: 16,
+    color: "#fff",
+    marginRight: 10,
+  },
+  heartIcon: {
+    fontSize: 16,
+    color: "#ccc",
+  },
+  heartIconLiked: {
+    color: "#ff0000",
   },
   recommendedContainer: {
     marginTop: 20,
@@ -288,20 +348,50 @@ const styles = StyleSheet.create({
   gridItem: {
     flex: 1,
     backgroundColor: "#fff",
-    borderRadius: 8,
-    padding: 8,
+    borderRadius: 16,
+    overflow: "hidden",
     margin: 8,
-    alignItems: "center",
+    shadowColor: "#000",
+    shadowOpacity: 0.2,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 5 },
+    elevation: 2,
+    maxWidth: 205,
   },
   gridImage: {
     width: "100%",
     height: 100,
-    borderRadius: 8,
+  },
+  gridOverlay: {
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: "rgba(0, 0, 0, 0.6)",
+    padding: 10,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
   },
   gridPlaceName: {
     fontSize: 16,
-    marginTop: 8,
-    textAlign: "center",
+    color: "#fff",
+  },
+  gridInfo: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  gridRating: {
+    fontSize: 14,
+    color: "#fff",
+    marginRight: 8,
+  },
+  gridHeart: {
+    fontSize: 18,
+    color: "#ccc",
+  },
+  gridHeartLiked: {
+    color: "#ff0000",
   },
   gridColumn: {
     justifyContent: "space-between",

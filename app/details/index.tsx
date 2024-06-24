@@ -29,9 +29,9 @@ const DetailsPage = () => {
         </View>
         <View style={styles.content}>
           <Text style={styles.title}>{placeData.display_name}</Text>
-          <Text style={styles.reviews}>★ 4.5 (355 Reviews)</Text>
+          <Text style={styles.reviews}>★ {placeData.rating} (355 Reviews)</Text>
           <Text style={styles.description}>
-            Aspen is as close as one can get to a storybook alpine town in America. The choose-your-own-adventure possibilities—skiing, hiking, dining, shopping and Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived .....
+            {placeData.description}
           </Text>
           <Text style={styles.readMore}>Read more</Text>
           <View style={styles.facilities}>
